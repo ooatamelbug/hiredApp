@@ -1,7 +1,7 @@
-import { rigesterAppler } from './dto/applyer.dto';
 import { ApplyerRepository } from './applyer.repository';
 import { Applyer } from './models/applyer.model';
 import { Injectable } from '@nestjs/common';
+import { genSalt, hash } from 'bcrypt';
 
 @Injectable()
 export class ApplyerService {
@@ -15,8 +15,13 @@ export class ApplyerService {
     return this.applyerRepository.find({});
   }
 
-  async createApplyer(applyerDto: rigesterAppler): Promise<Applyer> {
-    return this.applyerRepository.create(applyerDto);
+  async createApplyer(applyerDto: Partial<Applyer>): Promise<Applyer> {
+    const getSalt = await genSalt(12);
+    const hashpassword = await hash(applyerDto.password, getSalt);
+    return this.applyerRepository.create({
+      ...applyerDto,
+      password: hashpassword,
+    });
   }
 
   async updateApplyer(
